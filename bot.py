@@ -54,7 +54,7 @@ class FriendsBot(discord.Client):
                 "answered": False,
                 "answered_by": None}
 
-    def update_score(self, user_id, name):
+    def update_score(self, user_id, name, points):
         """
         Adds one point to the passed user ID's entry in scores.json,
         and updates the username with the name from the message
@@ -63,11 +63,11 @@ class FriendsBot(discord.Client):
             scores = read_json(self.scores_fp)
             try:
                 scores[user_id]['name'] = name
-                scores[user_id]['score'] += 1
+                scores[user_id]['score'] += points
             except KeyError:
-                scores.update({user_id: {'name': name, 'score': 1}})
+                scores.update({user_id: {'name': name, 'score': points}})
         except FileNotFoundError:
-            scores = {user_id: {'name': name, 'score': 1}}
+            scores = {user_id: {'name': name, 'score': points}}
             logging.info(f'Creating {self.scores_fp}')
         write_json(scores, self.scores_fp)
         logging.info(f'Added one point to {name} - {self.scores_fp}')
@@ -160,7 +160,7 @@ class FriendsBot(discord.Client):
                         entry['answered'] = True
                         if not revealed:
                             entry['answered_by'] = user_id
-                            self.update_score(user_id, m_name)
+                            self.update_score(user_id, m_name, 1)
                         rw_json(db, self.db_fp)
 
                     if text.startswith('!ANSWER'):  # Reveal the answer
@@ -177,7 +177,8 @@ class FriendsBot(discord.Client):
                         mark_answered()
                     else:  # Incorrect answer
                         logging.info(f"Incorrect answer '{text_raw}' submitted by {m_name}")
-                        reply = f':x: Try again, {m_name}'
+                        reply = f':x: Incorrect, -1 to {m_name}'
+                        self.update_score(user_id, m_name, -1)
 
                     await message.reply(reply)
 
