@@ -7,7 +7,6 @@ from json_dict import *
 import pandas as pd
 import logging
 
-os.chdir('/home/pi/python/friends_bot')
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')  # Bot token
